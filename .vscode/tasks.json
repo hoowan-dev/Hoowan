@@ -1,0 +1,44 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Generate Projects (premake)",
+            "type": "process",
+            "command": "${workspaceFolder}/vendor/bin/premake/premake5.exe",
+            "args": ["--file=${workspaceFolder}/premake5.lua", "vs2019"],
+            "problemMatcher": []
+        },
+        {
+            "label": "Build Sandbox (Debug)",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/Build.ps1", "-Configuration", "Debug", "-Project", "Sandbox"],
+            "group": { "kind": "build", "isDefault": true },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build Hoowan-Editor (Debug)",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/Build.ps1", "-Configuration", "Debug", "-Project", "Hoowan-Editor"],
+            "group": "build",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build All (Debug)",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/Build.ps1", "-Configuration", "Debug"],
+            "group": "build",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build All (Release)",
+            "type": "process",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/Build.ps1", "-Configuration", "Release"],
+            "group": "build",
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}

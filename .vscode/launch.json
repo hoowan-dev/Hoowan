@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Hoowan-Editor",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/Debug-windows-x86_64/Hoowan-Editor/Hoowan-Editor.exe",
+            "cwd": "${workspaceFolder}/Hoowan-Editor",
+            "console": "integratedTerminal",
+            "preLaunchTask": "Build Hoowan-Editor (Debug)"
+        },
+        {
+            "name": "Debug Sandbox",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/Debug-windows-x86_64/Sandbox/Sandbox.exe",
+            "cwd": "${workspaceFolder}/Sandbox",
+            "console": "integratedTerminal",
+            "preLaunchTask": "Build Sandbox (Debug)"
+        }
+    ]
+}

@@ -17,3 +17,4 @@
 [submodule "Hoowan/vendor/Box2D"]
 	path = Hoowan/vendor/Box2D
 	url = https://github.com/erincatto/box2d
+	ignore = untracked

@@ -1,6 +1,6 @@
 workspace "Hoowan"
 	architecture "x64"
-	startproject "Sandbox"
+	startproject "Hoowan-Editor"
 
 	configurations
 	{
@@ -29,7 +29,8 @@ group "Dependencies"
 	include "Hoowan/vendor/GLFW"
 	include "Hoowan/vendor/Glad"
 	include "Hoowan/vendor/imgui"
-	include "Hoowan/vendor/Box2D"
+	include "vendor/premake/Box2D.lua"
+group ""
 
 project "Hoowan"
 	location "Hoowan"

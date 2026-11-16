@@ -1,39 +1,39 @@
-# gitignore for C++
-
-# Binaries
-**/bin/
-!vendor/bin/premake/
+# Build output (premake: bin/ and bin-int/ at the root and inside vendor projects)
+bin/
 bin-int/
+!/vendor/bin/
+!/vendor/bin/**
 
-# Visual Studio files and folder
+# Premake-generated Visual Studio files (regenerate with GenerateProjects.bat)
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Visual Studio
 .vs/
-**.sln
-**.vcxproj
-**.vcxproj.filters
-**.vcxproj.user 
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-
-# Visual Studio Files
-Debug
-Release
 *.suo
-*.csproj.user
-*.vbproj.user
-ipch
-*sdf
+*.user
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+ipch/
 
-# Output Instrumentation Files
-*.json
+# Compiler / linker artifacts that land outside bin/
+*.obj
+*.o
+*.pch
+*.ipch
+*.ilk
+*.idb
+*.pdb
+*.tlog
+*.lastbuildstate
+
+# Instrumentation output (Hoowan/Debug/Instrumentor.h)
+HoowanProfile-*.json
+
+# Claude Code personal files
+.claude/settings.local.json
+CLAUDE.local.md

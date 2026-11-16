@@ -1,0 +1,31 @@
+{
+    "version": 4,
+    "configurations": [
+        {
+            "name": "Win64 (MSVC)",
+            "compilerPath": "cl.exe",
+            "intelliSenseMode": "windows-msvc-x64",
+            "cppStandard": "c++17",
+            "windowsSdkVersion": "",
+            "includePath": [
+                "${workspaceFolder}/Hoowan/src",
+                "${workspaceFolder}/Hoowan/vendor",
+                "${workspaceFolder}/Hoowan/vendor/spdlog/include",
+                "${workspaceFolder}/Hoowan/vendor/GLFW/include",
+                "${workspaceFolder}/Hoowan/vendor/Glad/include",
+                "${workspaceFolder}/Hoowan/vendor/imgui",
+                "${workspaceFolder}/Hoowan/vendor/glm",
+                "${workspaceFolder}/Hoowan/vendor/stb_image",
+                "${workspaceFolder}/Hoowan/vendor/EnTT",
+                "${workspaceFolder}/Hoowan/vendor/Box2D/include"
+            ],
+            "defines": [
+                "HW_PLATFORM_WINDOWS",
+                "HW_DEBUG",
+                "GLFW_INCLUDE_NONE",
+                "_CRT_SECURE_NO_WARNINGS"
+            ],
+            "forcedInclude": []
+        }
+    ]
+}
