@@ -34,7 +34,7 @@ namespace Hoowan
 		TransformComponent(const Ref<glm::mat4> transform) : Transform(transform) {}
 
 		// Setters
-		void SetTransform(glm::mat4& newTransform) { *Transform = newTransform; }
+		void SetTransform(const glm::mat4& newTransform) { *Transform = newTransform; }
 
 		operator glm::mat4& () { return *Transform; }
 		operator const glm::mat4& () const { return *Transform; }
@@ -91,22 +91,24 @@ namespace Hoowan
 	{
 		CollisionBody CollisionBody;
 
-		CollisionComponent(const CollisionComponent&) = default;
+		// Move-only: the component owns its Box2D body
+		CollisionComponent(CollisionComponent&&) noexcept = default;
+		CollisionComponent& operator=(CollisionComponent&&) noexcept = default;
 		CollisionComponent(bool isDynamic) : CollisionBody(isDynamic) {}
 		CollisionComponent(bool isDynamic, glm::vec2& position) : CollisionBody(isDynamic, position) {}
 		CollisionComponent(bool isDynamic, glm::mat4& transform) : CollisionBody(isDynamic, transform) {}
 		CollisionComponent(bool isDynamic, glm::vec2& position, glm::vec2& scale) : CollisionBody(isDynamic, position, scale) {}
 
 		// Getters
-		glm::mat4 GetTransform() { return CollisionBody.GetTransform(); };
+		glm::mat4 GetTransform(float alpha = 1.0f) const { return CollisionBody.GetTransform(alpha); };
 	};
 
 	struct NativeScriptComponent
 	{
 		ScriptableEntity* Instance = nullptr;
 
-		ScriptableEntity*(*InstantiateScript)();
-		void(*DestroyScript)(NativeScriptComponent*);
+		ScriptableEntity*(*InstantiateScript)() = nullptr;
+		void(*DestroyScript)(NativeScriptComponent*) = nullptr;
 
 		template<typename T>
 		void Bind()

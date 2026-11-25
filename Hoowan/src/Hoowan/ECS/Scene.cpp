@@ -16,11 +16,27 @@ namespace Hoowan
 		: m_PhysicsWorld(-9.8f)
 	{
 		CollisionBody::Init(m_PhysicsWorld.GetWorldReference());
+
+		// Tear down script instances whenever a NativeScriptComponent goes away
+		// (component removed, entity destroyed, or scene destroyed)
+		m_Registry.on_destroy<NativeScriptComponent>().connect<&Scene::OnNativeScriptDestroyed>(*this);
 	}
 
 	Scene::~Scene()
 	{
-		
+		// Destroy every entity while the physics world and this scene are still
+		// alive, so scripts get OnDestroy and bodies are removed from the world
+		m_Registry.clear();
+	}
+
+	void Scene::OnNativeScriptDestroyed(entt::registry& registry, entt::entity entity)
+	{
+		auto& nsc = registry.get<NativeScriptComponent>(entity);
+		if (nsc.Instance)
+		{
+			nsc.Instance->OnDestroy();
+			nsc.DestroyScript(&nsc);
+		}
 	}
 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -71,6 +87,7 @@ namespace Hoowan
 			// TODO: Implement Scene::OnSceneEnd()
 			if (!nsc.Instance)
 			{
+				HW_CORE_ASSERT(nsc.InstantiateScript, "NativeScriptComponent has no script bound! Call Bind<T>() first.");
 				nsc.Instance = nsc.InstantiateScript();
 				nsc.Instance->m_Entity = Entity{ entity, this };
 				nsc.Instance->OnCreate();
@@ -84,17 +101,26 @@ namespace Hoowan
 	{
 		HW_PROFILE_FUNCTION();
 
-		// Simulate the world
-		m_PhysicsWorld.SimulateFrame(ts);
+		// Simulate the world in fixed steps, snapshotting each body before every step
+		m_PhysicsWorld.Update(ts, [this]()
+		{
+			m_Registry.view<CollisionComponent>().each([](auto& collider)
+			{
+				collider.CollisionBody.SavePreviousState();
+			});
+		});
 
-		// Update the transform components of possibly-moved objects
+		// Update the transform components of possibly-moved objects, blended between
+		// the last two physics steps so motion stays smooth at any framerate
 		// TODO: Optimize to only trigger on dynamic objects
+		const float alpha = m_PhysicsWorld.GetInterpolationAlpha();
+
 		auto group = m_Registry.group<>(entt::get<TransformComponent, CollisionComponent>);
 		for (auto entity : group)
 		{
 			auto& [transform, collider] = group.get<TransformComponent, CollisionComponent>(entity);
 
-			transform.SetTransform(collider.GetTransform());
+			transform.SetTransform(collider.GetTransform(alpha));
 		}
 	}
 

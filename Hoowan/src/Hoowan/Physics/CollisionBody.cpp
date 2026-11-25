@@ -68,11 +68,43 @@ namespace Hoowan
 		{
 			m_Body->CreateFixture(&polygonDefinition, 0.0f);
 		}
+
+		SavePreviousState();
 	}
 
 	CollisionBody::~CollisionBody()
 	{
-		// Box2D takes care of memory management via the s_World reference
+		DestroyBody();
+	}
+
+	CollisionBody::CollisionBody(CollisionBody&& other) noexcept
+		: m_Body(other.m_Body), m_PreviousPosition(other.m_PreviousPosition), m_PreviousAngle(other.m_PreviousAngle)
+	{
+		other.m_Body = nullptr;
+	}
+
+	CollisionBody& CollisionBody::operator=(CollisionBody&& other) noexcept
+	{
+		if (this != &other)
+		{
+			DestroyBody();
+			m_Body = other.m_Body;
+			m_PreviousPosition = other.m_PreviousPosition;
+			m_PreviousAngle = other.m_PreviousAngle;
+			other.m_Body = nullptr;
+		}
+
+		return *this;
+	}
+
+	void CollisionBody::DestroyBody()
+	{
+		// Remove the body from the world it was created in, so no ghost collider stays behind
+		if (m_Body)
+		{
+			m_Body->GetWorld()->DestroyBody(m_Body);
+			m_Body = nullptr;
+		}
 	}
 
 	void CollisionBody::SetLinearVelocity(glm::vec2& velocity)
@@ -85,15 +117,24 @@ namespace Hoowan
 		m_Body->ApplyForce(b2Vec2(force.x, force.y), m_Body->GetWorldCenter(), false);
 	}
 
-	glm::mat4 CollisionBody::GetTransform()
+	void CollisionBody::SavePreviousState()
 	{
-		b2Transform box2DTransform = m_Body->GetTransform();
+		const b2Vec2& position = m_Body->GetPosition();
+		m_PreviousPosition = { position.x, position.y };
+		m_PreviousAngle = m_Body->GetAngle();
+	}
 
-		// Convert to a glm::mat4&
-		glm::mat4 glmTransform =
-			glm::translate(glm::mat4(1.0f), glm::vec3(box2DTransform.p.x, box2DTransform.p.y, 0.0f)) *
-			glm::rotate(glm::mat4(1.0f), glm::radians(box2DTransform.q.GetAngle()), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 CollisionBody::GetTransform(float alpha) const
+	{
+		const b2Vec2& current = m_Body->GetPosition();
 
-		return glmTransform;
+		// b2Body::GetAngle() is continuous (it doesn't wrap at +/-pi), so it can be
+		// interpolated directly. It is already in radians.
+		const glm::vec2 position = glm::mix(m_PreviousPosition, glm::vec2(current.x, current.y), alpha);
+		const float angle = glm::mix(m_PreviousAngle, m_Body->GetAngle(), alpha);
+
+		return
+			glm::translate(glm::mat4(1.0f), glm::vec3(position, 0.0f)) *
+			glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f));
 	}
 }

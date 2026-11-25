@@ -27,6 +27,9 @@ namespace Hoowan {
 		}
 
 	private:
+		void SetDefaultParameters();
+
+	private:
 		std::string m_Path;
 		uint32_t m_Width, m_Height;
 		uint32_t m_RendererID;

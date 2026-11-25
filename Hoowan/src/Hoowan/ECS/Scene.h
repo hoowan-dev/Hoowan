@@ -31,10 +31,14 @@ namespace Hoowan
 		void UpdateTexturedSpriteComponents(Timestep ts);
 		void UpdateSubTexturedSpriteComponents(Timestep ts);
 
+		void OnNativeScriptDestroyed(entt::registry& registry, entt::entity entity);
+
 	private:
+		// Declared before the registry so it is destroyed after it: collision
+		// components remove their bodies from this world when they are destroyed
+		Hoowan::Physics2DWorld m_PhysicsWorld;
 		entt::registry m_Registry;
 		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
-		Hoowan::Physics2DWorld m_PhysicsWorld;
 
 		// Entity does not own Scene, but it must be able to reference its registry
 		friend class Entity;

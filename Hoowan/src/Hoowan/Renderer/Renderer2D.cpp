@@ -174,6 +174,24 @@ namespace Hoowan
 		s_Data.TextureSlotIndex = 1;
 	}
 
+	float Renderer2D::GetTextureSlotIndex(const Ref<Texture2D>& texture)
+	{
+		// Slot 0 is the white texture, so user textures start at 1
+		for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+		{
+			if (*s_Data.TextureSlots[i] == *texture)
+				return (float)i;
+		}
+
+		// Every slot is taken: draw what we have and start a fresh batch
+		if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots)
+			StartNewBatch();
+
+		const uint32_t index = s_Data.TextureSlotIndex++;
+		s_Data.TextureSlots[index] = texture;
+		return (float)index;
+	}
+
 	// ----------------------------------------------------------------------------------------------------------------
 	// Colored quads
 	// ----------------------------------------------------------------------------------------------------------------
@@ -287,23 +305,7 @@ namespace Hoowan
 
 		constexpr glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-		float textureIndex = 0.0f;
-
-		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
-		{
-			if (*s_Data.TextureSlots[i].get() == *texture.get())
-			{
-				textureIndex = (float)i;
-				break;
-			}
-		}
-
-		if (textureIndex == 0.0f)
-		{
-			textureIndex = (float)s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
-			s_Data.TextureSlotIndex++;
-		}
+		const float textureIndex = GetTextureSlotIndex(texture);
 
 		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[0];
 		s_Data.QuadVertexBufferPtr->Color = color;
@@ -376,23 +378,7 @@ namespace Hoowan
 		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
 			StartNewBatch();
 
-		float textureIndex = 0.0f;
-
-		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
-		{
-			if (*s_Data.TextureSlots[i].get() == *subTexture->GetTexture().get())
-			{
-				textureIndex = (float)i;
-				break;
-			}
-		}
-
-		if (textureIndex == 0.0f)
-		{
-			textureIndex = (float)s_Data.TextureSlotIndex;
-			s_Data.TextureSlots[s_Data.TextureSlotIndex] = subTexture->GetTexture();
-			s_Data.TextureSlotIndex++;
-		}
+		const float textureIndex = GetTextureSlotIndex(subTexture->GetTexture());
 
 		constexpr glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		const glm::vec2* texCoords = subTexture->GetTexCoords();
@@ -433,7 +419,9 @@ namespace Hoowan
 
 	void Renderer2D::ResetStats()
 	{
-		memset(&s_Data.stats, 0, sizeof(Stats));
+		// Only per-frame counters: the frame time history must survive across frames
+		s_Data.stats.DrawCalls = 0;
+		s_Data.stats.QuadCount = 0;
 	}
 
 	void Renderer2D::StatsBeginFrame()
@@ -443,8 +431,12 @@ namespace Hoowan
 
 	void Renderer2D::StatsEndFrame()
 	{
-		s_Data.stats.FrameRenderTimes[s_Data.stats.FrameCount] = (float)glfwGetTime() - s_Data.stats.CurrentFrameBeginTime;
-		s_Data.stats.TotalFrameRenderTime += (s_Data.stats.FrameRenderTimes[s_Data.stats.FrameCount] - s_Data.stats.FrameRenderTimes[(s_Data.stats.FrameCount + 1) % s_Data.stats.FrameRenderTimes.size()]);
+		// Rolling sum over the ring buffer: drop the sample being overwritten, add the new one
+		float& slot = s_Data.stats.FrameRenderTimes[s_Data.stats.FrameCount];
+		const float frameTime = (float)glfwGetTime() - s_Data.stats.CurrentFrameBeginTime;
+
+		s_Data.stats.TotalFrameRenderTime += frameTime - slot;
+		slot = frameTime;
 
 		if (++s_Data.stats.FrameCount == s_Data.stats.FrameRenderTimes.size())
 			s_Data.stats.FrameCount = 0;

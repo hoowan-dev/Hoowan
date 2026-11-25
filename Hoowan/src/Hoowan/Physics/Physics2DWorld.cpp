@@ -18,14 +18,27 @@ namespace Hoowan
 
 	void Physics2DWorld::SimulateFrame()
 	{
-		(*m_World).Step(1.0f / 60.0f, 6, 2);
+		m_World->Step(FixedTimeStep, 6, 2);
 	}
 
-	void Physics2DWorld::SimulateFrame(Timestep ts)
+	void Physics2DWorld::Update(Timestep ts, const std::function<void()>& beforeStep)
 	{
-		// This may ruin everything lmao.
-		// Prefer to use non-argument function (fixed 60fps)
-		(*m_World).Step(ts.GetSeconds(), 6, 2);
+		m_Accumulator += ts.GetSeconds();
+
+		uint32_t steps = 0;
+		while (m_Accumulator >= FixedTimeStep && steps < MaxStepsPerFrame)
+		{
+			if (beforeStep)
+				beforeStep();
+
+			SimulateFrame();
+			m_Accumulator -= FixedTimeStep;
+			steps++;
+		}
+
+		// Hit the step cap: drop the backlog instead of carrying it into later frames
+		if (m_Accumulator >= FixedTimeStep)
+			m_Accumulator = 0.0f;
 	}
 
 	Ref<b2World> Physics2DWorld::GetWorldReference()

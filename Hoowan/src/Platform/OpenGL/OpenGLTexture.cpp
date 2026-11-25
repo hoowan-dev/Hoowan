@@ -42,8 +42,7 @@ namespace Hoowan {
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, internalFormat, m_Width, m_Height);
 
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_REPEAT);
+		SetDefaultParameters();
 
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
 
@@ -61,8 +60,18 @@ namespace Hoowan {
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_REPEAT);
+		SetDefaultParameters();
+	}
+
+	void OpenGLTexture2D::SetDefaultParameters()
+	{
+		// Nearest-neighbour filtering keeps pixel art sharp and avoids sampling
+		// neighbouring cells of a sprite sheet at sub-texture edges
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 
 	OpenGLTexture2D::~OpenGLTexture2D()

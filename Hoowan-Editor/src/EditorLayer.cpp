@@ -163,11 +163,11 @@ namespace Hoowan
 
 		// Stats
 		auto stats = Renderer2D::GetStats();
-		float averageRenderTime = stats.TotalFrameRenderTime / stats.FrameRenderTimes.size() * 100.0f;
-		float averageFPS = (1.0f / averageRenderTime);
+		float averageRenderTime = stats.TotalFrameRenderTime / stats.FrameRenderTimes.size();	// seconds
+		float averageFPS = averageRenderTime > 0.0f ? (1.0f / averageRenderTime) : 0.0f;
 
 		ImGui::Begin("Renderer2D Stats");
-		ImGui::Text("Render time: %8.5f", averageRenderTime);
+		ImGui::Text("Render time: %8.3f ms", averageRenderTime * 1000.0f);
 		ImGui::Text("Render framerate: %5.0f", averageFPS);
 		ImGui::Text("");
 		ImGui::Text("Draw Calls: %d", stats.GetDrawCallCount());

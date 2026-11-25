@@ -42,7 +42,7 @@ namespace Hoowan {
 		// Statistics
 		struct Stats
 		{
-			std::array<float, 100> FrameRenderTimes;
+			std::array<float, 100> FrameRenderTimes{};
 			uint32_t DrawCalls = 0;
 			uint32_t QuadCount = 0;
 			uint32_t FrameCount = 0;
@@ -67,5 +67,6 @@ namespace Hoowan {
 
 	private:
 		static void StartNewBatch();
+		static float GetTextureSlotIndex(const Ref<Texture2D>& texture);
 	};
 }
